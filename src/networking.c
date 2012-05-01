@@ -67,6 +67,8 @@ redisClient *createClient(int fd) {
     c->io_keys = listCreate();
     c->watched_keys = listCreate();
     listSetFreeMethod(c->io_keys,decrRefCount);
+    c->auto_del_keys = listCreate();
+    listSetFreeMethod(c->auto_del_keys,decrRefCount);
     c->pubsub_channels = dictCreate(&setDictType,NULL);
     c->pubsub_patterns = listCreate();
     listSetFreeMethod(c->pubsub_patterns,decrRefCount);
@@ -576,6 +578,9 @@ void freeClient(redisClient *c) {
     /* UNWATCH all the keys */
     unwatchAllKeys(c);
     listRelease(c->watched_keys);
+    /* DEL all AUTO_DEL keys */
+    delAllAutoDelKeys(c);
+    listRelease(c->auto_del_keys);
     /* Unsubscribe from all the pubsub channels */
     pubsubUnsubscribeAllChannels(c,0);
     pubsubUnsubscribeAllPatterns(c,0);

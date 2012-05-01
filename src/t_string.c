@@ -33,6 +33,11 @@ void setGenericCommand(redisClient *c, int nx, robj *key, robj *val, robj *expir
     setKey(c->db,key,val);
     server.dirty++;
     if (expire) setExpire(c->db,key,mstime()+milliseconds);
+
+    if (nx && c->argc > 3 && !listSearchKey(c->auto_del_keys, key)) {
+        incrRefCount(key);
+        listAddNodeTail(c->auto_del_keys, key);
+    }
     addReply(c, nx ? shared.cone : shared.ok);
 }
 

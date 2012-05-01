@@ -348,6 +348,7 @@ typedef struct redisClient {
     list *io_keys;          /* Keys this client is waiting to be loaded from the
                              * swap file in order to continue. */
     list *watched_keys;     /* Keys WATCHED for MULTI/EXEC CAS */
+    list *auto_del_keys;	/* Keys set by SETNX with the AUTO_DEL option */
     dict *pubsub_channels;  /* channels a client is interested in (SUBSCRIBE) */
     list *pubsub_patterns;  /* patterns a client is interested in (SUBSCRIBE) */
 
