@@ -13,6 +13,17 @@ static int checkStringLength(redisClient *c, long long size) {
     return REDIS_OK;
 }
 
+void delAllAutoDelKeys(redisClient *c) {
+	int j, l = listLength(c->auto_del_keys);
+	for (j = 0; j < l; j++) {
+		robj* v = listNodeValue(listIndex(c->auto_del_keys, j));
+        if (dbDelete(c->db,v)) {
+            signalModifiedKey(c->db,v);
+            server.dirty++;
+        }
+    }
+}
+
 void setGenericCommand(redisClient *c, int nx, robj *key, robj *val, robj *expire, int unit) {
     long long milliseconds = 0; /* initialized to avoid an harmness warning */
 

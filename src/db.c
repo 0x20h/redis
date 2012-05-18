@@ -137,16 +137,6 @@ int dbDelete(redisDb *db, robj *key) {
     }
 }
 
-void delAllAutoDelKeys(redisClient *c) {
-	int j, l = listLength(c->auto_del_keys);
-	for (j = 0; j < l; j++) {
-		robj* v = listNodeValue(listIndex(c->auto_del_keys, j));
-        if (dbDelete(c->db,v)) {
-            signalModifiedKey(c->db,v);
-            server.dirty++;
-        }
-    }
-}
 long long emptyDb() {
     int j;
     long long removed = 0;
@@ -218,6 +208,10 @@ void delCommand(redisClient *c) {
 
     for (j = 1; j < c->argc; j++) {
         if (dbDelete(c->db,c->argv[j])) {
+            listNode* node = listSearchKey(c->auto_del_keys, c->argv[j]);
+            if (node) {
+                listDelNode(c->auto_del_keys, node);
+            }
             signalModifiedKey(c->db,c->argv[j]);
             server.dirty++;
             deleted++;

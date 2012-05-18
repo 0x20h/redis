@@ -69,6 +69,7 @@ redisClient *createClient(int fd) {
     listSetFreeMethod(c->io_keys,decrRefCount);
     c->auto_del_keys = listCreate();
     listSetFreeMethod(c->auto_del_keys,decrRefCount);
+    listSetMatchMethod(c->auto_del_keys,listMatchObjects);
     c->pubsub_channels = dictCreate(&setDictType,NULL);
     c->pubsub_patterns = listCreate();
     listSetFreeMethod(c->pubsub_patterns,decrRefCount);
